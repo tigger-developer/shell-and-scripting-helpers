@@ -2048,3 +2048,9 @@ function ln() {
       command ln "$@"
    fi
 }
+
+output_on_completion() {
+    local lines
+    mapfile -t lines
+    printf '%s\n' "${lines[@]}"
+}

@@ -559,3 +559,14 @@ function mv () {
       show_cmd gmv "$@"
    fi
 }
+
+acp () {
+   warn "overriding ~/bin/acp"
+   git add --all
+   git commit -m "${*:-$HOSTNAME:sync}"
+   info git merge will run async
+   {
+      show_cmd git pull
+      show_cmd git push
+   } 2>&1 | output_on_completion &
+}
