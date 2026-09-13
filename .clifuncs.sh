@@ -551,38 +551,6 @@ pbcopy () {
    fi
 }
 
-function mv() {
-  local -a switches=()
-  local source destination source_root destination_root destination_probe
-
-  while (($#)) && [[ $1 == -* ]]; do
-    switches+=("$1")
-    shift
-    [[ ${switches[-1]} == -- ]] && break
-  done
-
-  (($# == 2)) || { command mv "${switches[@]}" "$@"; return; }
-
-  source=$1
-  destination=$2
-
-  # A non-existent destination is resolved from its parent directory.
-  if [[ -d $destination ]]; then
-    destination_probe=$destination
-  else
-    destination_probe=$(dirname -- "$destination")
-  fi
-
-  source_root=$(git -C "$(dirname -- "$source")" rev-parse --show-toplevel 2>/dev/null)
-  destination_root=$(git -C "$destination_probe" rev-parse --show-toplevel 2>/dev/null)
-
-  if [[ -n $source_root && $source_root == "$destination_root" ]]; then
-    git -C "$source_root" mv "${switches[@]}" "$source" "$destination"
-  else
-    command gmv -iv "${switches[@]}" "$source" "$destination"
-  fi
-}
-
 acp () {
    warn "overriding ~/bin/acp"
    git add --all
