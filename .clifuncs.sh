@@ -543,21 +543,10 @@ cxword() {
 }
 
 # shellcheck disable=SC2120
-pbcopy () {
+pbcopy() {
    if [ $# -gt 0 ] && [ -r "$1" ]; then
-      command pbcopy < "$1"
+      command pbcopy <"$1"
    else
       command pbcopy
    fi
-}
-
-acp () {
-   warn "overriding ~/bin/acp"
-   git add --all
-   git commit -m "${*:-$HOSTNAME:sync}"
-   info git merge will run async
-   {
-      show_cmd git pull
-      show_cmd git push
-   } 2>&1 | output_on_completion &
 }

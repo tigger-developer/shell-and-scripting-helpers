@@ -665,16 +665,12 @@ confirm_continue() {
 
 show_cmd_execute() {
 
-   local bright=$'\e[1m' yellow=$'\e[0;33m' reset=$'\e[0m'
-
-   echo -e "⚡️ ${bright}$*${reset}" >/dev/stderr
+   echo -e "⚡️ $*" >/dev/stderr
    "$@"
    rc=$?
 
    {
-      if [ $rc -eq 0 ]; then
-         echo -ne "🟢"
-      else
+      if [ $rc -ne 0 ]; then
          echo -ne "🔴"
       fi
       echo " $rc"
@@ -1013,6 +1009,7 @@ open() {
 }
 
 maybe() {
+   deprecated 1
    # USAGE: maybe [COMMAND]
    # this function conditionally executes a command based on the debug flag
    if [ -z "$debug" ] || [[ "$debug" == "false" ]]; then
@@ -1564,27 +1561,6 @@ is_interactive() {
    fi
 }
 
-rm_if() {
-   # remove file, if it exists
-
-   local rm_if_verbose=true
-   if [[ "$1" == "-q" ]]; then
-      rm_if_verbose=false
-      shift
-   fi
-
-   while [ $# -gt 0 ]; do
-      if [ -e "$1" ]; then
-         if trash "$1" >/dev/null 2>&1; then
-            if $rm_if_verbose; then
-               info trashed "$1"
-            fi
-         fi
-      fi
-      shift
-   done 2>&1
-}
-
 cp_bak() {
    # USAGE: cp_bak_if ITEM
    # if ITEM exists, copy it to ITEM.bak or ITEM.N.bak
@@ -2050,7 +2026,36 @@ function ln() {
 }
 
 output_on_completion() {
-    local lines
-    mapfile -t lines
-    printf '%s\n' "${lines[@]}"
+   local lines
+   mapfile -t lines
+   printf '%s\n' "${lines[@]}"
+}
+
+maybe_rm() {
+   local rm_path
+   read -r rm_path < <(which rm)
+
+   local rm_command=("$rm_path")
+   if [[ "$1" == "-v" ]] || [[ "$1" == "--verbose" ]]; then
+      local rm_command=(show_cmd_execute "$rm_path" -v)
+      shift
+   elif [[ "$1" == "-q" ]] || [[ "$1" == "--quiet" ]]; then
+      # no-op - ignore
+      shift
+   elif [[ "$1" == "-"* ]]; then
+      warn "Ignoring unknown option: $1"
+      shift
+   fi
+
+   local rc
+   for f in "$@"; do
+      if [ -e "$f" ]; then
+         "${rm_command[@]}" "$f" 1>&2 | tr '\n' '\t'
+      fi
+   done
+}
+
+rm_if() {
+   deprecated 5
+   maybe_rm "$@"
 }
