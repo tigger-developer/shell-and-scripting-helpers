@@ -2059,3 +2059,18 @@ rm_if() {
    deprecated 5
    maybe_rm "$@"
 }
+
+show_safe_path() {
+   if [[ "$1" == "-h" ]] || [[ "$1" == "--help" ]]; then
+      echo "This outputs the current PATH with one entry per line. This is a common contract"
+      echo "for safe reading of PATH particularly for emacs. A corresponding function is"
+      echo "in ~/.qfuncs.sh (from repo: tigger-developer/shell-and-scripting-helpers) in bash."
+      return 0
+   fi
+
+   IFS=':' read -ra path_entries <<< "$PATH"
+   for p in "${path_entries[@]}"; do
+      echo "$p"
+   done
+
+}
